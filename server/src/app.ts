@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import leadRoutes from "./routes/lead.routes.js";
 
 const app = express();
 
@@ -12,5 +13,6 @@ app.get("/api/health", (req, res) => {
     message: "Lead Api is running",
   });
 });
+app.use("/api/leads", leadRoutes);
 
 export default app;
