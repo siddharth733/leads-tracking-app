@@ -1,4 +1,3 @@
-import { email } from "zod";
 import { prisma } from "../lib/prisma.js";
 
 interface CreateLeadData {
