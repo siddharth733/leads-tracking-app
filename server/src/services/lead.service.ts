@@ -67,3 +67,11 @@ export const updateLead = async (id: number, data: updateLeadData) => {
     data,
   });
 };
+
+export const deleteLead = async (id: number) => {
+  return prisma.lead.delete({
+    where: {
+      id,
+    },
+  });
+};

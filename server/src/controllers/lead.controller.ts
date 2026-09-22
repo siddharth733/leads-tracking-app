@@ -110,3 +110,35 @@ export const updateLead = async (
     next(error);
   }
 };
+
+export const deleteLead = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid lead ID",
+      });
+    }
+
+    const existingLead = await leadService.getLeadById(id);
+
+    if (!existingLead) {
+      return res.status(200).json({
+        success: false,
+        message: "Lead not found",
+      });
+    }
+
+    await leadService.deleteLead(id);
+
+    return res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
