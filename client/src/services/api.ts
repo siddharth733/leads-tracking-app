@@ -1,9 +1,9 @@
-import {
+import type {
+  Lead,
+  LeadResponse,
   LeadsResponse,
   NotesResponse,
-  type Lead,
-  type LeadResponse,
-  type LeadStatus,
+  LeadStatus,
 } from "../types/lead";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";

@@ -11,7 +11,7 @@ export const createLead = async (
 
     return res.status(201).json({
       success: true,
-      date: lead,
+      data: lead,
     });
   } catch (error) {
     next(error);
