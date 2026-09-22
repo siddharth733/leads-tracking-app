@@ -10,4 +10,8 @@ export const createLeadSchema = z.object({
     .default("new"),
 });
 
-export const updateLeadSchema = createLeadSchema.partial();
+export const updateLeadSchema = createLeadSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field is required",
+  });

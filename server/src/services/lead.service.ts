@@ -13,6 +13,8 @@ interface GetLeadsParams {
   status?: "new" | "contacted" | "qualified" | "lost";
 }
 
+type updateLeadData = Partial<CreateLeadData>;
+
 export const createLead = async (data: CreateLeadData) => {
   return prisma.lead.create({
     data,
@@ -54,5 +56,14 @@ export const getLeadById = async (id: number) => {
     where: {
       id,
     },
+  });
+};
+
+export const updateLead = async (id: number, data: updateLeadData) => {
+  return prisma.lead.update({
+    where: {
+      id,
+    },
+    data,
   });
 };
