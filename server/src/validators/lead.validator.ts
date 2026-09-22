@@ -15,3 +15,10 @@ export const updateLeadSchema = createLeadSchema
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field is required",
   });
+
+export const getLeadsQuerySchema = z.object({
+  search: z.string().trim().optional(),
+  status: z.enum(["new", "contacted", "qualified", "lost"]).optional(),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(10),
+});

@@ -1,9 +1,12 @@
-import { type ZodSchema } from "zod";
 import { type NextFunction, type Request, type Response } from "express";
+import { type ZodSchema } from "zod";
+
+type RequestPart = "body" | "query";
 
 export const validate =
-  (schema: ZodSchema) => (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req.body);
+  (schema: ZodSchema, part: RequestPart = "body") =>
+  (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req[part]);
 
     if (!result.success) {
       return res.status(400).json({
@@ -13,7 +16,13 @@ export const validate =
       });
     }
 
-    req.body = result.data;
+    if (part === "body") {
+      req.body = result.data;
+    }
+
+    if (part === "query") {
+      Object.assign(req.query, result.data);
+    }
 
     next();
   };

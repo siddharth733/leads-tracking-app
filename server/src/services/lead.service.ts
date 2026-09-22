@@ -10,6 +10,8 @@ interface CreateLeadData {
 interface GetLeadsParams {
   search?: string;
   status?: "new" | "contacted" | "qualified" | "lost";
+  page: number;
+  limit: number;
 }
 
 type updateLeadData = Partial<CreateLeadData>;
@@ -20,34 +22,56 @@ export const createLead = async (data: CreateLeadData) => {
   });
 };
 
-export const getLeads = async (params: GetLeadsParams) => {
-  const { search, status } = params;
-
-  return prisma.lead.findMany({
-    where: {
-      ...(search && {
-        OR: [
-          {
-            name: {
-              contains: search,
-            },
+export const getLeads = async ({
+  search,
+  status,
+  page,
+  limit,
+}: GetLeadsParams) => {
+  const where = {
+    ...(search && {
+      OR: [
+        {
+          name: {
+            contains: search,
           },
-          {
-            email: {
-              contains: search,
-            },
+        },
+        {
+          email: {
+            contains: search,
           },
-        ],
-      }),
+        },
+      ],
+    }),
 
-      ...(status && {
-        status,
-      }),
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    ...(status && {
+      status,
+    }),
+  };
+
+  const skip = (page - 1) * limit;
+
+  const [leads, total] = await Promise.all([
+    prisma.lead.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.lead.count({
+      where,
+    }),
+  ]);
+
+  return {
+    leads,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 };
 
 export const getLeadById = async (id: number) => {

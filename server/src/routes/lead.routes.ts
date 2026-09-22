@@ -9,12 +9,13 @@ import {
 import { validate } from "../middleware/validation.middleware.js";
 import {
   createLeadSchema,
+  getLeadsQuerySchema,
   updateLeadSchema,
 } from "../validators/lead.validator.js";
 
 const router = Router();
 
-router.get("/", getLeads);
+router.get("/", validate(getLeadsQuerySchema, "query"), getLeads);
 router.get("/:id", getLeadById);
 router.post("/", validate(createLeadSchema), createLead);
 router.patch("/id", validate(updateLeadSchema), updateLead);

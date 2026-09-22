@@ -28,15 +28,27 @@ export const getLeads = async (
       typeof req.query.search === "string" ? req.query.search : undefined;
     const status =
       typeof req.query.status === "string" ? req.query.status : undefined;
+    const page =
+      typeof req.query.page === "string" ? Number(req.query.page) : 1;
+    const limit =
+      typeof req.query.limit === "string" ? Number(req.query.limit) : 10;
 
-    const leads = await leadService.getLeads({
+    const result = await leadService.getLeads({
       search,
       status: status as "new" | "contacted" | "qualified" | "lost" | undefined,
+      page,
+      limit,
     });
 
     return res.status(200).json({
       success: true,
-      data: leads,
+      data: result.leads,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
     });
   } catch (error) {
     next(error);
