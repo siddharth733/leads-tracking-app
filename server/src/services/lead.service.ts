@@ -48,3 +48,11 @@ export const getLeads = async (params: GetLeadsParams) => {
     },
   });
 };
+
+export const getLeadById = async (id: number) => {
+  return prisma.lead.findUnique({
+    where: {
+      id,
+    },
+  });
+};
