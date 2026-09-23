@@ -1,14 +1,17 @@
-import { Link, useSearchParams } from "react-router";
-import type { Lead, LeadStatus } from "../types/lead";
 import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router";
+
 import { getLeads } from "../services/api";
+import type { Lead, LeadStatus } from "../types/lead";
+
+import StatusBadge from "../components/StatusBadge";
 import Pagination from "../components/Pagination";
 
 const PAGE_SIZE = 10;
 
 const statuses: LeadStatus[] = ["new", "contacted", "qualified", "lost"];
 
-const LeadsPage = () => {
+export default function LeadsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const search = searchParams.get("search") ?? "";
@@ -16,10 +19,11 @@ const LeadsPage = () => {
   const page = Number(searchParams.get("page") ?? "1");
 
   const [searchInput, setSearchInput] = useState(search);
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -88,6 +92,7 @@ const LeadsPage = () => {
       page: String(nextPage),
     });
   };
+
   return (
     <section className="page">
       <div className="page-header">
@@ -100,6 +105,7 @@ const LeadsPage = () => {
           + Create Lead
         </Link>
       </div>
+
       <form className="filters" onSubmit={handleSearch}>
         <input
           type="search"
@@ -110,7 +116,8 @@ const LeadsPage = () => {
 
         <select value={status} onChange={handleStatusChange}>
           <option value="">All statuses</option>
-          {statuses?.map((item) => (
+
+          {statuses.map((item) => (
             <option key={item} value={item}>
               {item}
             </option>
@@ -118,51 +125,62 @@ const LeadsPage = () => {
         </select>
 
         <button type="submit">Search</button>
-
-        {loading && <div className="state">Loading leads...</div>}
-        {!loading && !error && leads.length === 0 && (
-          <div className="state">No leads found</div>
-        )}
-        {!loading && !error && leads.length > 0 && (
-          <>
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leads?.map((lead) => (
-                    <tr key={lead.id}>
-                      <td>{lead?.name}</td>
-                      <td>{lead?.email}</td>
-                      <td>{lead?.phone}</td>
-                      <td>{lead?.status}</td>
-                      <td>{new Date(lead?.createdAt).toLocaleDateString()}</td>
-                      <td>
-                        <Link to={`/leads/${lead?.id}`}>View</Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </>
-        )}
       </form>
+
+      {loading && <div className="state">Loading leads...</div>}
+
+      {!loading && error && <div className="state state-error">{error}</div>}
+
+      {!loading && !error && leads.length === 0 && (
+        <div className="state">No leads found.</div>
+      )}
+
+      {!loading && !error && leads.length > 0 && (
+        <>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th />
+                </tr>
+              </thead>
+
+              <tbody>
+                {leads.map((lead) => (
+                  <tr key={lead.id}>
+                    <td>{lead.name}</td>
+
+                    <td>{lead.email}</td>
+
+                    <td>{lead.phone}</td>
+
+                    <td>
+                      <StatusBadge status={lead.status} />
+                    </td>
+
+                    <td>{new Date(lead.createdAt).toLocaleDateString()}</td>
+
+                    <td>
+                      <Link to={`/leads/${lead.id}`}>View</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
+      )}
     </section>
   );
-};
-
-export default LeadsPage;
+}

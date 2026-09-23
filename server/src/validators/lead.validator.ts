@@ -3,7 +3,10 @@ import { z } from "zod";
 export const createLeadSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   email: z.string().trim().email("Invalid email format"),
-  phone: z.string().trim().min(1, "Phone is required"),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9+\-\s()]{7,20}$/, "Invalid phone number"),
   status: z
     .enum(["new", "contacted", "qualified", "lost"])
     .optional()

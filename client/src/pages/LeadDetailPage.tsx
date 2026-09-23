@@ -76,6 +76,7 @@ export default function LeadDetailPage() {
     const newStatus = event.target.value as LeadStatus;
     try {
       setStatusLoading(true);
+      setError("");
       const response = await updateLead(lead.id, {
         status: newStatus,
       });

@@ -1,18 +1,39 @@
-import { Link, Outlet } from "react-router";
+import { Link, NavLink, Outlet } from "react-router";
 
 export default function App() {
   return (
-    <>
-      <header>
-        <nav>
-          <Link to="/leads">Leads</Link>
-          {" | "}
-          <Link to="/leads/new">Create Lead</Link>
-        </nav>
+    <div className="app">
+      <header className="app-header">
+        <div className="app-header-inner">
+          <Link to="/leads" className="app-logo">
+            Leads Tracker
+          </Link>
+
+          <nav className="app-nav">
+            <NavLink
+              to="/leads"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+            >
+              Leads
+            </NavLink>
+
+            <NavLink
+              to="/leads/new"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+            >
+              Create Lead
+            </NavLink>
+          </nav>
+        </div>
       </header>
-      <main>
+
+      <main className="app-main">
         <Outlet />
       </main>
-    </>
+    </div>
   );
 }
