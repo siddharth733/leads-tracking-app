@@ -16,6 +16,17 @@ export interface Note {
   createdAt: string;
 }
 
+export interface CreateNoteInput {
+  content: string;
+}
+
+export interface UpdateLeadInput {
+  name?: string;
+  email?: string;
+  phone?: string;
+  status?: LeadStatus;
+}
+
 export interface LeadsResponse {
   success: boolean;
   data: Lead[];

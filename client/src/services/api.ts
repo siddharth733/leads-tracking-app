@@ -4,6 +4,8 @@ import type {
   LeadsResponse,
   NotesResponse,
   LeadStatus,
+  CreateNoteInput,
+  Note,
 } from "../types/lead";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -90,9 +92,12 @@ export const getNotes = async (leadId: number) => {
   return request<NotesResponse>(`/leads/${leadId}/notes`);
 };
 
-export const createNotes = async (leadId: number, content: string) => {
-  return request<NotesResponse>(`/leads/${leadId}/notes`, {
+export const createNote = async (leadId: number, data: CreateNoteInput) => {
+  return request<{
+    success: boolean;
+    data: Note;
+  }>(`/leads/${leadId}/notes`, {
     method: "POST",
-    body: JSON.stringify({ content }),
+    body: JSON.stringify(data),
   });
 };
