@@ -9,23 +9,27 @@ export default function Pagination({
   totalPages,
   onPageChange,
 }: PaginationProps) {
-  if (totalPages <= 1) {
-    return null;
-  }
+  const isFirstPage = page <= 1;
+  const isLastPage = totalPages <= 1 || page >= totalPages;
 
   return (
     <div className="pagination">
-      <button disabled={page === 1} onClick={() => onPageChange(page - 1)}>
-        Previous
+      <button
+        type="button"
+        disabled={isFirstPage}
+        onClick={() => onPageChange(page - 1)}
+      >
+        &larr; Previous
       </button>
-      <span>
-        Page {page} of {totalPages}
+      <span className="pagination-info">
+        Page {page} of {Math.max(1, totalPages)}
       </span>
       <button
-        disabled={page === totalPages}
+        type="button"
+        disabled={isLastPage}
         onClick={() => onPageChange(page + 1)}
       >
-        Next
+        Next &rarr;
       </button>
     </div>
   );

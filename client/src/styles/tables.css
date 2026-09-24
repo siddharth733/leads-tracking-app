@@ -1,0 +1,213 @@
+/* Data Tables & Pagination (Light Theme) */
+.table-wrapper {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: var(--shadow-sm);
+}
+
+.lead-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.lead-table th {
+  background: #f8fafc;
+  padding: 14px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.lead-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.table-row-interactive {
+  transition: background 0.15s ease;
+}
+
+.table-row-interactive:hover {
+  background: #f8fafc;
+}
+
+.lead-name-link {
+  font-weight: 700;
+  color: #0f172a;
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+
+.lead-name-link:hover {
+  color: var(--color-primary);
+}
+
+.table-actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.action-link-btn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.action-link-btn:hover {
+  background: var(--color-primary-light);
+}
+
+.icon-button-danger {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.icon-button-danger:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination button:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Mobile Card Layout — MUST come BEFORE the desktop hide rule  */
+.lead-mobile-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.lead-mobile-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.lead-mobile-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.lead-mobile-name:hover {
+  color: var(--color-primary);
+}
+
+.lead-mobile-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+.lead-mobile-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lead-mobile-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Default: hide mobile card list, show table */
+.lead-cards-list {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ≤ 640px: switch to card layout */
+@media (max-width: 640px) {
+  .lead-table {
+    display: none;
+  }
+
+  .lead-cards-list {
+    display: flex;
+  }
+
+  /* Reset table-wrapper visual chrome so cards sit flush */
+  .table-wrapper {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+}

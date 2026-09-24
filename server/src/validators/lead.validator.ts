@@ -1,12 +1,22 @@
 import { z } from "zod";
 
+export const phoneRegex = /^\+?[0-9\s\-\(\)\.]{7,20}$/;
+
 export const createLeadSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   email: z.string().trim().email("Invalid email format"),
   phone: z
     .string()
     .trim()
-    .regex(/^[0-9+\-\s()]{7,20}$/, "Invalid phone number"),
+    .min(1, "Phone number is required")
+    .regex(phoneRegex, "Invalid phone number format")
+    .refine(
+      (val) => {
+        const digits = val.replace(/\D/g, "");
+        return digits.length >= 7 && digits.length <= 15;
+      },
+      { message: "Phone number must contain between 7 and 15 digits" },
+    ),
   status: z
     .enum(["new", "contacted", "qualified", "lost"])
     .optional()

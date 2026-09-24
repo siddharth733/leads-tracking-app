@@ -3,6 +3,7 @@ import cors from "cors";
 import leadRoutes from "./routes/lead.routes.js";
 import noteRoutes from "./routes/note.routes.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
+import { basicAuthMiddleware } from "./middleware/auth.middleware.js";
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.get("/api/health", (req, res) => {
     message: "Lead Api is running",
   });
 });
+
+app.use("/api/leads", basicAuthMiddleware);
 app.use("/api/leads", leadRoutes);
 app.use("/api/leads", noteRoutes);
 

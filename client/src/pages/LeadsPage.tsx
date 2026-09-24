@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router";
-
-import { getLeads } from "../services/api";
+import { useSearchParams } from "react-router";
+import { LayoutGrid, Table2 } from "lucide-react";
+import { leadService } from "../services/leadService";
+import { useDebounce } from "../hooks/useDebounce";
 import type { Lead, LeadStatus } from "../types/lead";
 
-import StatusBadge from "../components/StatusBadge";
+import LeadFilters from "../components/leads/LeadFilters";
+import LeadCard from "../components/leads/LeadCard";
+import LeadTable from "../components/leads/LeadTable";
 import Pagination from "../components/Pagination";
+import LoadingSpinner from "../components/common/LoadingSpinner";
+import EmptyState from "../components/common/EmptyState";
+import DeleteModal from "../components/common/DeleteModal";
 
 const PAGE_SIZE = 10;
-
-const statuses: LeadStatus[] = ["new", "contacted", "qualified", "lost"];
+const STATUSES: LeadStatus[] = ["new", "contacted", "qualified", "lost"];
 
 export default function LeadsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,45 +24,88 @@ export default function LeadsPage() {
   const page = Number(searchParams.get("page") ?? "1");
 
   const [searchInput, setSearchInput] = useState(search);
+  const debouncedSearch = useDebounce(searchInput, 400);
 
   const [leads, setLeads] = useState<Lead[]>([]);
   const [totalPages, setTotalPages] = useState(1);
 
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteTargetLead, setDeleteTargetLead] = useState<Lead | null>(null);
   const [error, setError] = useState("");
 
+  const [viewMode, setViewMode] = useState<"card" | "table">(() => {
+    return (localStorage.getItem("leads_view_mode") as "card" | "table") ?? "table";
+  });
+
+  const handleViewMode = (mode: "card" | "table") => {
+    setViewMode(mode);
+    localStorage.setItem("leads_view_mode", mode);
+  };
+
+  // Keep searchInput state in sync with URL search param changes
   useEffect(() => {
     setSearchInput(search);
   }, [search]);
 
+  // Update URL search param when debounced search value changes
   useEffect(() => {
-    const loadLeads = async () => {
+    if (debouncedSearch.trim() !== search.trim()) {
+      updateQueryParams({
+        search: debouncedSearch.trim() || undefined,
+        page: "1",
+      });
+    }
+  }, [debouncedSearch]);
+
+  // Fetch leads with AbortController for request cancellation
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchLeads = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const response = await getLeads({
-          search: search || undefined,
-          status: status || undefined,
-          page,
-          limit: PAGE_SIZE,
-        });
+        const response = await leadService.getLeads(
+          {
+            search: search || undefined,
+            status: status || undefined,
+            page,
+            limit: PAGE_SIZE,
+          },
+          { signal: controller.signal },
+        );
 
-        setLeads(response.data);
-        setTotalPages(response.pagination.totalPages);
-      } catch (error) {
+        if (!controller.signal.aborted) {
+          setLeads(response.data);
+          setTotalPages(response.pagination.totalPages);
+        }
+      } catch (err) {
+        if (
+          err instanceof Error &&
+          (err.name === "AbortError" || err.message.includes("aborted"))
+        ) {
+          return;
+        }
         setError(
-          error instanceof Error ? error.message : "Failed to load leads",
+          err instanceof Error ? err.message : "Failed to fetch leads",
         );
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
-    loadLeads();
+    fetchLeads();
+
+    return () => {
+      controller.abort();
+    };
   }, [search, status, page]);
 
-  const updateParams = (updates: Record<string, string | undefined>) => {
+  const updateQueryParams = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(searchParams);
 
     Object.entries(updates).forEach(([key, value]) => {
@@ -71,108 +119,141 @@ export default function LeadsPage() {
     setSearchParams(params);
   };
 
-  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    updateParams({
-      search: searchInput.trim() || undefined,
+  const handleStatusFilter = (newStatus: string) => {
+    updateQueryParams({
+      status: newStatus || undefined,
       page: "1",
     });
   };
 
-  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    updateParams({
-      status: event.target.value || undefined,
-      page: "1",
-    });
+  const handleClearFilters = () => {
+    setSearchInput("");
+    setSearchParams({});
   };
 
   const handlePageChange = (nextPage: number) => {
-    updateParams({
-      page: String(nextPage),
-    });
+    updateQueryParams({ page: String(nextPage) });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetLead) return;
+
+    const controller = new AbortController();
+
+    try {
+      setDeleting(true);
+
+      await leadService.deleteLead(deleteTargetLead.id, {
+        signal: controller.signal,
+      });
+
+      // Update local state immediately
+      setLeads((prev) => prev.filter((l) => l.id !== deleteTargetLead.id));
+      setDeleteTargetLead(null);
+    } catch (err) {
+      if (
+        err instanceof Error &&
+        (err.name === "AbortError" || err.message.includes("aborted"))
+      ) {
+        return;
+      }
+      setError(
+        err instanceof Error ? err.message : "Failed to delete lead",
+      );
+      setDeleteTargetLead(null);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
-    <section className="page">
+    <div className="leads-page-container">
+      {/* Page Header */}
       <div className="page-header">
         <div>
-          <h1>Leads</h1>
-          <p>Manage and track your leads.</p>
+          <h1 className="page-title">Leads Pipeline</h1>
+          <p className="page-description">
+            Track, manage, and convert incoming customer leads.
+          </p>
         </div>
-
-        <Link to="/leads/new" className="button button-primary">
-          + Create Lead
-        </Link>
       </div>
 
-      <form className="filters" onSubmit={handleSearch}>
-        <input
-          type="search"
-          placeholder="Search by name or email..."
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
+      {/* Filters + View Toggle */}
+      <div className="filters-and-toggle">
+        <LeadFilters
+          searchInput={searchInput}
+          selectedStatus={status}
+          statuses={STATUSES}
+          onSearchChange={setSearchInput}
+          onStatusChange={handleStatusFilter}
+          onClearFilters={handleClearFilters}
         />
+        <div className="view-toggle-group">
+          <button
+            type="button"
+            className={`view-toggle-btn${viewMode === "table" ? " active" : ""}`}
+            onClick={() => handleViewMode("table")}
+            title="Table View"
+          >
+            <Table2 size={17} strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            className={`view-toggle-btn${viewMode === "card" ? " active" : ""}`}
+            onClick={() => handleViewMode("card")}
+            title="Card View"
+          >
+            <LayoutGrid size={17} strokeWidth={2} />
+          </button>
+        </div>
+      </div>
 
-        <select value={status} onChange={handleStatusChange}>
-          <option value="">All statuses</option>
+      {/* Content Section */}
+      {loading && <LoadingSpinner label="Loading pipeline leads..." size="large" />}
 
-          {statuses.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-
-        <button type="submit">Search</button>
-      </form>
-
-      {loading && <div className="state">Loading leads...</div>}
-
-      {!loading && error && <div className="state state-error">{error}</div>}
+      {!loading && error && (
+        <div className="state-error-banner">
+          <p>{error}</p>
+        </div>
+      )}
 
       {!loading && !error && leads.length === 0 && (
-        <div className="state">No leads found.</div>
+        <EmptyState
+          title="No leads match your criteria"
+          description={
+            search || status
+              ? "Try adjusting your search keywords or status filter."
+              : "Get started by adding your first lead to the pipeline."
+          }
+          action={
+            search || status ? (
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={handleClearFilters}
+              >
+                Clear Search & Filters
+              </button>
+            ) : null
+          }
+        />
       )}
 
       {!loading && !error && leads.length > 0 && (
         <>
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th />
-                </tr>
-              </thead>
-
-              <tbody>
-                {leads.map((lead) => (
-                  <tr key={lead.id}>
-                    <td>{lead.name}</td>
-
-                    <td>{lead.email}</td>
-
-                    <td>{lead.phone}</td>
-
-                    <td>
-                      <StatusBadge status={lead.status} />
-                    </td>
-
-                    <td>{new Date(lead.createdAt).toLocaleDateString()}</td>
-
-                    <td>
-                      <Link to={`/leads/${lead.id}`}>View</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {viewMode === "card" ? (
+            <div className="leads-card-grid">
+              {leads.map((lead) => (
+                <LeadCard
+                  key={lead.id}
+                  lead={lead}
+                  onDelete={setDeleteTargetLead}
+                />
+              ))}
+            </div>
+          ) : (
+            <LeadTable leads={leads} onDelete={setDeleteTargetLead} />
+          )}
 
           <Pagination
             page={page}
@@ -181,6 +262,15 @@ export default function LeadsPage() {
           />
         </>
       )}
-    </section>
+
+      {/* Delete Lead Confirmation Modal */}
+      <DeleteModal
+        isOpen={Boolean(deleteTargetLead)}
+        leadName={deleteTargetLead?.name}
+        deleting={deleting}
+        onClose={() => setDeleteTargetLead(null)}
+        onConfirm={handleConfirmDelete}
+      />
+    </div>
   );
 }

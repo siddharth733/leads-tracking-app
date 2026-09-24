@@ -106,7 +106,7 @@ export const updateLead = async (
     const existingLead = await leadService.getLeadById(id);
 
     if (!existingLead) {
-      return res.status(200).json({
+      return res.status(404).json({
         success: false,
         message: "Lead not found",
       });
@@ -141,7 +141,7 @@ export const deleteLead = async (
     const existingLead = await leadService.getLeadById(id);
 
     if (!existingLead) {
-      return res.status(200).json({
+      return res.status(404).json({
         success: false,
         message: "Lead not found",
       });

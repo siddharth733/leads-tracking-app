@@ -1,0 +1,58 @@
+/* Status Badges & Pill Indicators (Light Theme) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-new {
+  /* background: #eff6ff; */
+  color: #2563eb;
+  border: 2px solid #2563eb;
+}
+.status-new::before { background: #2563eb; }
+
+.status-contacted {
+  /* background: #fffbeb; */
+  color: #d97706  ;
+  border: 2px solid #d97706;
+}
+.status-contacted::before { background: #d97706; }
+
+.status-qualified {
+  /* background: #ecfdf5; */
+  color: #059669;
+  border: 2px solid #059669;
+}
+.status-qualified::before { background: #059669; }
+
+.status-lost {
+  /* background: #fff1f2; */
+  color: #e11d48;
+  border: 2px solid #e11d48;
+}
+.status-lost::before { background: #e11d48; }
+
+.badge-count {
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--color-border);
+}
